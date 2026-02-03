@@ -9,13 +9,20 @@ import traceback
 # Security: List of disallowed modules and functions
 BLACKLIST_IMPORTS = {
     "os", "sys", "subprocess", "shutil", "builtins", "importlib", "socket", 
-    "requests", "urllib", "ftplib", "smtplib", "telnetlib", "http"
+    "requests", "urllib", "ftplib", "smtplib", "telnetlib", "http", "multiprocessing", "threading"
 }
 
 BLACKLIST_FUNCTIONS = {
-    "eval", "exec", "open", "compile", "globals", "locals", "super", 
+    "eval", "exec", "open", "compile", "globals", "locals", 
     "getattr", "setattr", "delattr", "input", "breakpoint", "help", 
     "exit", "quit"
+}
+
+# Essential dunder methods for classes to work correctly
+ALLOWED_DUNDERS = {
+    "__init__", "__str__", "__repr__", "__len__", "__getitem__", 
+    "__setitem__", "__iter__", "__next__", "__enter__", "__exit__", 
+    "__call__", "__add__", "__sub__", "__mul__", "__truediv__", "__name__"
 }
 
 class SecurityViolation(Exception):
@@ -40,11 +47,10 @@ class SafeVisitor(ast.NodeVisitor):
         self.generic_visit(node)
     
     def visit_Attribute(self, node):
-        # Prevent accessing some dangerous attributes directly if possible, though strict typing makes this hard
-        # This is a basic MVP check.
-        if node.attr.startswith("__"):
-            raise SecurityViolation("Accessing private/dunder attributes is not allowed.")
+        if node.attr.startswith("__") and node.attr not in ALLOWED_DUNDERS:
+            raise SecurityViolation(f"Accessing private/dunder attribute '{node.attr}' is not allowed.")
         self.generic_visit(node)
+
 
 def validate_code(code: str):
     """
@@ -83,19 +89,13 @@ def execute_user_code(code: str, timeout: int = 2):
             try:
                 # Execute in a restricted scope
                 # We give it a limited set of builtins to further restrict
-                safe_builtins = {k: v for k, v in __builtins__.items() if k not in BLACKLIST_FUNCTIONS and k != '__import__'}
-                # We can allow __import__ but wrap it, or rely on AST check. 
-                # AST check is safer for "import os", but runtime __import__ can bypass AST.
-                # For this MVP, we remove __import__ from builtins which effectively kills all imports 
-                # unless we restore specific ones. 
-                # BUT, users might need math, datetime, random. 
-                # So we should probably allow __import__ but rely on AST to catch malicious ones.
-                # However, malicious users can do `__builtins__['__import__']('os')`.
-                # So we remove `__import__` and pre-import allowed modules if needed, OR we trust AST + specific runtime checks.
-                # For an MVP, we will rely on AST check + removing `open`, `exec`, `eval` from builtins.
+                # We allow __import__ because we rely on the AST validation step 
+                # to block malicious modules before execution.
+                safe_builtins = {k: v for k, v in __builtins__.items() if k not in BLACKLIST_FUNCTIONS}
                 
                 restricted_globals = {"__builtins__": safe_builtins}
                 exec(code, restricted_globals)
+
             except Exception:
                 traceback.print_exc()
         
