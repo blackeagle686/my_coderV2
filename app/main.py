@@ -78,9 +78,12 @@ async def summarize_endpoint(request: SummarizeRequest):
 async def execute_endpoint(request: ExecuteRequest):
     try:
         result = execute_user_code(request.code)
-        return result
+        return JSONResponse(content=result)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        return JSONResponse(
+            status_code=500,
+            content={"stdout": "", "stderr": str(e), "error": True}
+        )
 
 # Mount Static Files (Frontend)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
