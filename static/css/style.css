@@ -455,19 +455,20 @@ body {
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #E84545 0%, #903749 100%);
+    background: linear-gradient(135deg, var(--accent-color) 0%, var(--secondary-color) 100%);
     border: none;
     font-weight: 600;
     padding: 10px 24px;
-    box-shadow: 0 4px 15px rgba(232, 69, 69, 0.3);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(232, 69, 69, 0.4);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
     filter: brightness(1.1);
 }
+
 
 .btn-success {
     background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
