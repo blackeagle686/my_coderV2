@@ -19,22 +19,22 @@
 }
 
 /* ================= Global ================= */
-body {
-    background: radial-gradient(circle at 50% -20%, #3d427a, var(--bg-color));
-    color: var(--text-color);
-    font-family: 'Outfit', sans-serif;
-    height: 100vh;
-    overflow: hidden;
-    margin: 0;
-}
 html, body {
     height: 100%;
+    margin: 0;
 }
 
 body {
     display: flex;
     flex-direction: column;
+
+    background: radial-gradient(circle at 50% -20%, #3d427a, var(--bg-color));
+    color: var(--text-color);
+    font-family: 'Outfit', sans-serif;
+
+    overflow: hidden;
 }
+
 
 /* ================= Glassmorphism ================= */
 .glass-effect {
@@ -90,6 +90,7 @@ body {
     transition: margin-right 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s ease;
     border-left: 1px solid var(--border-color);
     z-index: 50;
+    overflow-y: auto;
 }
 
 .code-sidebar.collapsed {
