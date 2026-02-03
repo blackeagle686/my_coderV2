@@ -18,6 +18,9 @@
     --ai-msg-text: #e6e6eb;
 
     --ai-msg-border: rgba(255, 255, 255, 0.1);
+
+    --header-bg: rgba(83, 53, 74, 0.6);
+    --footer-bg: rgba(43, 46, 74, 0.6);
 }
 
 [data-theme="light"] {
@@ -38,6 +41,9 @@
     --ai-msg-bg: #ffffff;
     --ai-msg-text: #005461;
     --ai-msg-border: rgba(0, 84, 97, 0.08);
+
+    --header-bg: rgba(36, 158, 148, 0.15);
+    --footer-bg: rgba(36, 158, 148, 0.1);
 }
 
 
@@ -154,7 +160,7 @@ body {
 .app-footer {
     flex-shrink: 0;
     padding: 15px 0 25px 0;
-    background: rgba(43, 46, 74, 0.6);
+    background: var(--footer-bg);
     backdrop-filter: blur(16px);
     border-top: 1px solid var(--border-color);
     z-index: 100;
@@ -243,7 +249,7 @@ body {
 
 /* ================= Sidebar/Nav Refinement ================= */
 .app-header {
-    background: rgba(83, 53, 74, 0.6);
+    background: var(--header-bg);
     backdrop-filter: blur(20px);
     z-index: 1000;
 }
@@ -251,7 +257,7 @@ body {
 .navbar-brand {
     font-weight: 700;
     letter-spacing: -0.5px;
-    background: linear-gradient(135deg, #fff 0%, #E84545 100%);
+    background: linear-gradient(135deg, var(--text-color) 0%, var(--accent-color) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
