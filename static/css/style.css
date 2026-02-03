@@ -364,6 +364,38 @@ body {
 }
 
 /* ================= Output ================= */
+/* ================= Code Container & Actions ================= */
+.code-container {
+    margin-top: 15px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.code-container pre {
+    margin: 0 !important;
+    border: none !important;
+}
+
+.code-actions {
+    z-index: 10;
+    transition: opacity 0.3s ease;
+}
+
+.code-actions .btn {
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    color: #fff;
+}
+
+.code-actions .btn:hover {
+    background: rgba(232, 69, 69, 0.8);
+    border-color: var(--accent-color);
+}
+
 .output-panel {
     background: #0a0a0f;
     border-radius: 12px;
