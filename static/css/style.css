@@ -122,7 +122,9 @@ body {
 
 /* ================= Sidebar ================= */
 .code-sidebar {
-    width: 650px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    width: 700px;
     height: 100%;
     transition: margin-right 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s ease;
     border-left: 1px solid var(--border-color);
@@ -131,7 +133,7 @@ body {
 }
 
 .code-sidebar.collapsed {
-    margin-right: -450px;
+    margin-right: -700px;
 }
 
 /* ================= Footer Input ================= */
