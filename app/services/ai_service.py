@@ -8,19 +8,24 @@ logger = logging.getLogger(__name__)
 class BaseAIService(abc.ABC):
     """Abstract base class for AI Services."""
     
+class BaseAIService(abc.ABC):
+    """Abstract base class for AI Services."""
+    
     @abc.abstractmethod
-    def generate_response(self, prompt: str) -> str:
-        """Generate a response for the given prompt."""
+    def generate_response(self, prompt: str, history: list = None) -> str:
+        """Generate a response for the given prompt, optionally considering history."""
         pass
 
 class MockAIService(BaseAIService):
     """Mock implementation for testing fallback scenarios."""
     
-    def generate_response(self, prompt: str) -> str:
+    def generate_response(self, prompt: str, history: list = None) -> str:
         time.sleep(1) # Simulate inference latency
+        history_len = len(history) if history else 0
         return f"""[MOCK RESPONSE - Qwen Model Not Loaded]
         
-I received: "{prompt}"
+I received: "{prompt}" (Context: {history_len} previous messages)
+
 
 Since `torch` or `transformers` are not installed or the model failed to load in this environment, I am responding with this mock message.
 
@@ -87,7 +92,7 @@ def mock_code():
             # If loading fails here, we might want to let the caller handle it or fallback
             raise e
 
-    def generate_response(self, prompt: str) -> str:
+    def generate_response(self, prompt: str, history: list = None) -> str:
         try:
             if self._model is None:
                 # Should have been loaded at startup, but just in case
@@ -95,10 +100,24 @@ def mock_code():
             
             import torch
             
+            # Initial system message
             messages = [
-                {"role": "system", "content": "You are Qwen, a helpful and comprehensive AI Coding Assistant. You can write code, debug, and explain concepts."},
-                {"role": "user", "content": prompt}
+                {"role": "system", "content": "You are Qwen, a helpful and comprehensive AI Coding Assistant. You can write code, debug, and explain concepts."}
             ]
+            
+            # Add History (last 20 messages)
+            if history:
+                # History is list of {"role": "user/ai", "content": "..."}
+                # Qwen expects "assistant" role instead of "ai"
+                formatted_history = []
+                for msg in history[-20:]: # Last 20
+                    role = "assistant" if msg["role"] == "ai" else "user"
+                    formatted_history.append({"role": role, "content": msg["content"]})
+                messages.extend(formatted_history)
+            
+            # Add current prompt
+            messages.append({"role": "user", "content": prompt})
+
             
             text = self._tokenizer.apply_chat_template(
                 messages,

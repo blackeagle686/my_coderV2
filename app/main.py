@@ -48,8 +48,9 @@ async def chat_endpoint(request: ChatRequest):
     try:
         # Use singleton getter
         service = get_ai_service()
-        response = service.generate_response(request.message)
+        response = service.generate_response(request.message, history=request.history)
         return {"response": response}
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

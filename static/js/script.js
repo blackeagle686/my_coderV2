@@ -10,8 +10,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const aiLoading = document.getElementById('ai-loading');
 
     let monacoEditor;
+    let chatHistory = [];
 
     // ================== Monaco Editor ==================
+
     if (document.getElementById('monaco-editor')) {
         require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs' } });
         require(['vs/editor/editor.main'], function () {
@@ -61,12 +63,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (hero) hero.remove();
 
         appendMessage('user', message);
+        chatHistory.push({ role: 'user', content: message });
+
         if (messageInput) messageInput.value = '';
         if (messageInput) messageInput.disabled = true;
         if (sendBtn) sendBtn.disabled = true;
-
-        // ... rest of sendMessage
-
 
         aiLoading?.classList.remove('d-none');
         chatContainer.scrollTop = chatContainer.scrollHeight;
@@ -75,7 +76,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch('/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message })
+                body: JSON.stringify({
+                    message: message,
+                    history: chatHistory.slice(0, -1).slice(-20) // Send context (up to 20 before current)
+                })
             });
 
             const data = await response.json();
@@ -83,6 +87,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (response.ok) {
                 appendMessage('ai', data.response);
+                chatHistory.push({ role: 'ai', content: data.response });
+
+                // Keep history trimmed to last 20 messages total
+                if (chatHistory.length > 20) {
+                    chatHistory = chatHistory.slice(-20);
+                }
+
                 extractCodeToEditor(data.response);
                 if (data.response.includes('```')) sidebar?.classList.remove('collapsed');
             } else {
@@ -97,6 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
             messageInput?.focus();
         }
     }
+
 
     sendBtn?.addEventListener('click', sendMessage);
     messageInput?.addEventListener('keypress', (e) => {
