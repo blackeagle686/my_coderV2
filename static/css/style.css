@@ -105,6 +105,7 @@ body {
     flex-grow: 1;
     display: flex;
     overflow: hidden;
+    padding: 5vw !important;
 }
 
 .app-panel {
