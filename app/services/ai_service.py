@@ -34,15 +34,21 @@ def mock_code():
 ```
 """
 
-class QwenAIService(BaseAIService):
-    """Real implementation using Qwen Coder model."""
-    
-    MODEL_NAME = "Qwen/Qwen2.5-Coder-3B-Instruct"
+# ... [Imports and Base Classes remain the same] ...
 
     def __init__(self):
         self._model = None
         self._tokenizer = None
         self._device = "cuda" if self._is_cuda_available() else "cpu"
+        
+        # Optimize: Enable TF32 if supported
+        if self._device == "cuda":
+            try:
+                import torch
+                torch.backends.cuda.matmul.allow_tf32 = True
+                logger.info("CUDA TF32 enabled.")
+            except Exception:
+                pass
 
     def _is_cuda_available(self):
         try:
@@ -52,7 +58,7 @@ class QwenAIService(BaseAIService):
             return False
 
     def _load_model(self):
-        """Lazy loads the model and tokenizer."""
+        """Loads the model and tokenizer. Called once at startup."""
         if self._model is not None:
             return
 
@@ -63,25 +69,32 @@ class QwenAIService(BaseAIService):
 
             self._tokenizer = AutoTokenizer.from_pretrained(self.MODEL_NAME)
             
-            # Load model with optimizations if plausible
+            # Load model with optimizations
             dtype = torch.float16 if self._device == "cuda" else torch.float32
             self._model = AutoModelForCausalLM.from_pretrained(
                 self.MODEL_NAME,
                 torch_dtype=dtype,
                 device_map="auto"
             )
-            logger.info("Model loaded successfully.")
+            
+            # Warm-up the model to remove cold-start latency
+            logger.info("Warming up model...")
+            self.generate_response("Hello")
+            logger.info("Model loaded and warmed up successfully.")
+            
         except Exception as e:
             logger.error(f"Failed to load model: {e}")
+            # If loading fails here, we might want to let the caller handle it or fallback
             raise e
 
     def generate_response(self, prompt: str) -> str:
         try:
-            self._load_model()
+            if self._model is None:
+                # Should have been loaded at startup, but just in case
+                self._load_model()
             
             import torch
             
-            # Prepare messages (Chat ML format)
             messages = [
                 {"role": "system", "content": "You are Qwen, a helpful and comprehensive AI Coding Assistant. You can write code, debug, and explain concepts."},
                 {"role": "user", "content": prompt}
@@ -95,14 +108,15 @@ class QwenAIService(BaseAIService):
             
             model_inputs = self._tokenizer([text], return_tensors="pt").to(self._model.device)
             
-            generated_ids = self._model.generate(
-                **model_inputs,
-                max_new_tokens=1024,
-                temperature=0.2,
-                top_p=0.9
-            )
+            # OPtimization: Use inference_mode
+            with torch.inference_mode():
+                generated_ids = self._model.generate(
+                    **model_inputs,
+                    max_new_tokens=512, # Reduced from 1024
+                    temperature=0.2,
+                    top_p=0.9
+                )
             
-            # Slice the output to remove the input prompt
             generated_ids = [
                 output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
             ]
@@ -114,16 +128,35 @@ class QwenAIService(BaseAIService):
             logger.error(f"LLM Generation Error: {e}")
             return f"Error regarding LLM: {str(e)}\n\n" + MockAIService().generate_response(prompt)
 
+# Singleton Instance
+_ai_service = None
+
 def get_ai_service() -> BaseAIService:
-    """Factory function to return the appropriate AI service."""
+    """
+    Factory function to return the singleton AI service.
+    Loads the model if not already loaded.
+    """
+    global _ai_service
+    
+    if _ai_service is not None:
+        return _ai_service
+
     try:
         import torch
         import transformers
-        # Check if we can actually import them and potentially use valid device
-        return QwenAIService()
-    except ImportError:
-        logger.warning("Torch/Transformers not found. Using MockAIService.")
-        return MockAIService()
+        
+        service = QwenAIService()
+        # Explicitly load model on creation (Startup)
+        service._load_model()
+        
+        _ai_service = service
+        return _ai_service
+        
+    except (ImportError, Exception) as e:
+        logger.warning(f"Failed to initialize QwenAIService ({e}). Using MockAIService.")
+        _ai_service = MockAIService()
+        return _ai_service
 
-# Singleton instance for easy import
-ai_service = get_ai_service()
+# Export a function to get it, rather than the instance directly, 
+# though main.py can call this at startup.
+

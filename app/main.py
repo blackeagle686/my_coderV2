@@ -8,7 +8,7 @@ import sys
 # Add project root to sys.path to resolve 'app' module imports
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from app.services.ai_service import ai_service
+from app.services.ai_service import get_ai_service
 from app.services.sandbox import execute_user_code
 
 app = FastAPI(title="AI Coder Assistant")
@@ -21,6 +21,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Startup Event: Load Model
+@app.on_event("startup")
+async def startup_event():
+    print("Application Startup: Loading AI Model...")
+    get_ai_service()
+    print("AI Model loaded/ready.")
 
 # Models
 class ChatRequest(BaseModel):
@@ -39,7 +46,9 @@ async def health_check():
 @app.post("/api/chat")
 async def chat_endpoint(request: ChatRequest):
     try:
-        response = ai_service.generate_response(request.message)
+        # Use singleton getter
+        service = get_ai_service()
+        response = service.generate_response(request.message)
         return {"response": response}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
