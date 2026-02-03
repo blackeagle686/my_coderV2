@@ -33,9 +33,14 @@ async def startup_event():
 class ChatRequest(BaseModel):
     message: str
     history: list = []
+    summary: str = ""
+
+class SummarizeRequest(BaseModel):
+    history: list
 
 class ExecuteRequest(BaseModel):
     code: str
+
 
 # API Endpoints
 
@@ -46,13 +51,28 @@ async def health_check():
 @app.post("/api/chat")
 async def chat_endpoint(request: ChatRequest):
     try:
-        # Use singleton getter
         service = get_ai_service()
-        response = service.generate_response(request.message, history=request.history)
+        
+        # If we have a summary, we prepend it to the first message or system prompt
+        # but the easiest is to just modify the prompt slightly
+        prompt = request.message
+        if request.summary:
+            prompt = f"[CONTEXT SUMMARY of previous discussion: {request.summary}]\n\nUSER MESSAGE: {request.message}"
+            
+        response = service.generate_response(prompt, history=request.history)
         return {"response": response}
-
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/summarize")
+async def summarize_endpoint(request: SummarizeRequest):
+    try:
+        service = get_ai_service()
+        summary = service.summarize_history(request.history)
+        return {"summary": summary}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.post("/api/execute")
 async def execute_endpoint(request: ExecuteRequest):

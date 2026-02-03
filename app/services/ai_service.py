@@ -13,6 +13,11 @@ class BaseAIService(abc.ABC):
         """Generate a response for the given prompt, optionally considering history."""
         pass
 
+    @abc.abstractmethod
+    def summarize_history(self, history: list) -> str:
+        """Summarize the given conversation history."""
+        pass
+
 class MockAIService(BaseAIService):
     """Mock implementation for testing fallback scenarios."""
     
@@ -22,21 +27,10 @@ class MockAIService(BaseAIService):
         return f"""[MOCK RESPONSE - Qwen Model Not Loaded]
         
 I received: "{prompt}" (Context: {history_len} previous messages)
-
-
-Since `torch` or `transformers` are not installed or the model failed to load in this environment, I am responding with this mock message.
-
-To use the real model, ensure dependencies are installed and you have a GPU:
-`pip install torch transformers accelerate`
-
-Here is a sample code snippet:
-```python
-def mock_code():
-    print("Real AI generation unavailable.")
-```
 """
 
-# ... [Imports and Base Classes remain the same] ...
+    def summarize_history(self, history: list) -> str:
+        return f"[MOCK SUMMARY of {len(history)} messages]"
 
 class QwenAIService(BaseAIService):
     """Real implementation using Qwen Coder model."""
@@ -91,38 +85,82 @@ class QwenAIService(BaseAIService):
             
         except Exception as e:
             logger.error(f"Failed to load model: {e}")
-            # If loading fails here, we might want to let the caller handle it or fallback
             raise e
+
+    def summarize_history(self, history: list) -> str:
+        """Summarizes the conversation history into a concise paragraph."""
+        try:
+            if self._model is None:
+                self._load_model()
+
+            import torch
+            
+            # Construct a prompt for summarization
+            history_text = ""
+            for msg in history:
+                role = "User" if msg["role"] == "user" else "Assistant"
+                history_text += f"{role}: {msg['content']}\n\n"
+
+            summary_prompt = f"""Summarize the following conversation history into one concise paragraph. 
+Focus on the main coding task being discussed and any key decisions or requirements mentioned.
+DO NOT write code in the summary.
+
+CONVERSATION:
+{history_text}
+
+SUMMARY:"""
+
+            messages = [
+                {"role": "system", "content": "You are a concise summarization assistant."},
+                {"role": "user", "content": summary_prompt}
+            ]
+
+            text = self._tokenizer.apply_chat_template(
+                messages,
+                tokenize=False,
+                add_generation_prompt=True
+            )
+
+            model_inputs = self._tokenizer([text], return_tensors="pt").to(self._model.device)
+
+            with torch.inference_mode():
+                generated_ids = self._model.generate(
+                    **model_inputs,
+                    max_new_tokens=256,
+                    temperature=0.3
+                )
+
+            generated_ids = [
+                output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
+            ]
+
+            response = self._tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
+            return response.strip()
+
+        except Exception as e:
+            logger.error(f"Summarization Error: {e}")
+            return f"Failed to summarize: {str(e)}"
 
     def generate_response(self, prompt: str, history: list = None) -> str:
         try:
             if self._model is None:
-                # Should have been loaded at startup, but just in case
                 self._load_model()
             
             import torch
             
-            # Initial system message
             messages = [
                 {"role": "system", "content": "You are Qwen, a helpful and comprehensive AI Coding Assistant. You can write code, debug, and explain concepts."}
             ]
             
-            # Add History (last 20 messages)
             if history:
-                print(f"Processing history: {len(history)} messages")
-                # History is list of {"role": "user/ai", "content": "..."}
-
-                # Qwen expects "assistant" role instead of "ai"
                 formatted_history = []
-                for msg in history[-20:]: # Last 20
+                for msg in history[-20:]: 
                     role = "assistant" if msg["role"] == "ai" else "user"
                     formatted_history.append({"role": role, "content": msg["content"]})
                 messages.extend(formatted_history)
             
-            # Add current prompt
             messages.append({"role": "user", "content": prompt})
 
-            
             text = self._tokenizer.apply_chat_template(
                 messages,
                 tokenize=False,
@@ -131,26 +169,24 @@ class QwenAIService(BaseAIService):
             
             model_inputs = self._tokenizer([text], return_tensors="pt").to(self._model.device)
             
-            # OPtimization: Use inference_mode
             with torch.inference_mode():
                 generated_ids = self._model.generate(
                     **model_inputs,
-                    max_new_tokens=1024, # Increased back to 1024 for complex code
+                    max_new_tokens=1024,
                     temperature=0.2,
                     top_p=0.9
                 )
 
-            
             generated_ids = [
                 output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
             ]
             
-            response = self._tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
-            return response
+            return self._tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
 
         except Exception as e:
             logger.error(f"LLM Generation Error: {e}")
             return f"Error regarding LLM: {str(e)}\n\n" + MockAIService().generate_response(prompt, history=history)
+
 
 # Singleton Instance
 _ai_service = None

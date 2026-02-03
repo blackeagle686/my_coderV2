@@ -11,6 +11,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let monacoEditor;
     let chatHistory = [];
+    let currentSummary = "";
+
 
     // ================== Monaco Editor ==================
 
@@ -78,7 +80,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     message: message,
-                    history: chatHistory.slice(0, -1).slice(-20) // Send context (up to 20 before current)
+                    history: chatHistory.slice(0, -1).slice(-10), // Send only last 10 as context
+                    summary: currentSummary // Send existing summary
                 })
             });
 
@@ -89,9 +92,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 appendMessage('ai', data.response);
                 chatHistory.push({ role: 'ai', content: data.response });
 
-                // Keep history trimmed to last 20 messages total
-                if (chatHistory.length > 20) {
-                    chatHistory = chatHistory.slice(-20);
+                // If history gets long, summarize the older parts
+                if (chatHistory.length >= 16) {
+                    summarizeHistory();
                 }
 
                 extractCodeToEditor(data.response);
@@ -108,6 +111,36 @@ document.addEventListener('DOMContentLoaded', () => {
             messageInput?.focus();
         }
     }
+
+    async function summarizeHistory() {
+        console.log("History threshold met. Summarizing older context...");
+
+        // Take first 10 messages to summarize
+        const toSummarize = chatHistory.slice(0, 10);
+
+        try {
+            const response = await fetch('/api/summarize', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ history: toSummarize })
+            });
+
+            const data = await response.json();
+            if (response.ok && data.summary) {
+                // Combine with existing summary if any
+                currentSummary = currentSummary
+                    ? `Previously: ${currentSummary}\nThen: ${data.summary}`
+                    : data.summary;
+
+                // Remove those 10 messages from active history
+                chatHistory = chatHistory.slice(10);
+                console.log("Summary updated and history compressed.");
+            }
+        } catch (error) {
+            console.error("Summarization failed:", error);
+        }
+    }
+
 
 
     sendBtn?.addEventListener('click', sendMessage);
