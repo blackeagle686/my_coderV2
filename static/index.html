@@ -26,7 +26,9 @@
     <link href="/css/style.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
 </head>
+
 
 
 <body>
@@ -94,9 +96,10 @@
                                 <i class="bi bi-play-fill"></i> Run
                             </button>
                         </div>
-                        <textarea id="code-editor" class="editor-textarea h-100"
-                            placeholder="# Code will appear here..."></textarea>
+                        <div id="monaco-editor" class="flex-grow-1 border rounded"
+                            style="min-height: 400px; background: #1e1e1e;"></div>
                     </div>
+
 
                     <!-- Output Part (Bottom of Sidebar) -->
                     <div class="output-section" style="height: 35%;">
@@ -120,7 +123,7 @@
             <div class="input-wrapper mx-auto" style="max-width: 900px;">
                 <div class="input-group glass-effect rounded-pill p-1">
                     <textarea id="message-input" class="form-control border-0 bg-transparent rounded-pill" rows="1"
-                         placeholder="Type your coding request..."></textarea>
+                        placeholder="Type your coding request..."></textarea>
                     <button id="send-btn" class="btn btn-primary rounded-pill px-4 ms-2">
                         <i class="bi bi-send"></i>
                     </button>
