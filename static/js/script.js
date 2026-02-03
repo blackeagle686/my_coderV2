@@ -57,6 +57,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ================== Send Message ==================
     async function sendMessage(text) {
+        console.log("Chat History:")
+        console.log(chatHistory)
+        console.log("Summary:")
+        console.log(currentSummary)
         const message = text || messageInput?.value.trim();
         if (!message) return;
 
@@ -294,8 +298,5 @@ document.addEventListener('DOMContentLoaded', () => {
             sendMessage(text);
         }
     });
-    console.log("Chat History:")
-    console.log(chatHistory)
-    console.log("Summary:")
-    console.log(currentSummary)
+
 });
