@@ -21,21 +21,21 @@
 }
 
 [data-theme="light"] {
-    --bg-color: #f8f9fa;
-    --sidebar-bg: #ffffff;
+    --bg-color: #DEF5E5;
+    --sidebar-bg: #BCEAD5;
     --text-color: #212529;
-    --accent-color: #E84545;
-    --secondary-color: #ff7675;
+    --accent-color: #8EC3B0;
+    --secondary-color: #9ED5C5;
 
-    --code-bg: #ffffff;
-    --output-bg: #f1f3f5;
+    --code-bg: #BCEAD5;
+    --output-bg: #BCEAD5;
 
-    --border-color: rgba(0, 0, 0, 0.1);
+    --border-color: rgba(0, 0, 0, 0.08);
 
-    --user-msg-bg: linear-gradient(135deg, #E84545, #d63031);
+    --user-msg-bg: linear-gradient(135deg, #9ED5C5, #8EC3B0);
     --user-msg-text: #ffffff;
 
-    --ai-msg-bg: #ffffff;
+    --ai-msg-bg: #BCEAD5;
     --ai-msg-text: #212529;
     --ai-msg-border: rgba(0, 0, 0, 0.08);
 }
