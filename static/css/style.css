@@ -371,7 +371,7 @@ body {
     font-family: "JetBrains Mono", monospace;
     font-size: 13px;
     overflow-y: auto;
-    margin-bottom: 1vw;
+    margin-bottom: 20px;
 }
 
 /* ================= Buttons ================= */
