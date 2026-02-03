@@ -2,11 +2,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatContainer = document.getElementById('chat-container');
     const messageInput = document.getElementById('message-input');
     const sendBtn = document.getElementById('send-btn');
+    const runBtn = document.getElementById('run-btn');
     const outputPanel = document.getElementById('output-content');
     const themeToggle = document.getElementById('theme-toggle');
     const sidebar = document.getElementById('code-sidebar');
     const toggleSidebarBtn = document.getElementById('toggle-sidebar');
     const aiLoading = document.getElementById('ai-loading');
+
 
     let monacoEditor;
 
@@ -29,6 +31,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 horizontalHasArrows: false,
                 verticalScrollbarSize: 10,
                 horizontalScrollbarSize: 10
+            },
+            // Enhanced Autocomplete & Suggestions
+            suggestOnTriggerCharacters: true,
+            quickSuggestions: {
+                "other": true,
+                "comments": false,
+                "strings": true
+            },
+            parameterHints: {
+                enabled: true
+            },
+            tabCompletion: "on",
+            wordBasedSuggestions: "allDocuments",
+            bracketPairColorization: {
+                enabled: true
             }
         });
     });
