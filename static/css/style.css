@@ -119,7 +119,8 @@ body {
 
 .chat-panel {
     position: relative;
-    padding: 2vw !important;
+    padding: 1vw !important;
+    border-radius: 20px;
 }
 
 /* ================= Sidebar ================= */
