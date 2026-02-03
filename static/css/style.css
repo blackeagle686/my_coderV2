@@ -21,24 +21,25 @@
 }
 
 [data-theme="light"] {
-    --bg-color: #DEF5E5;
-    --sidebar-bg: #BCEAD5;
-    --text-color: #212529;
-    --accent-color: #8EC3B0;
-    --secondary-color: #9ED5C5;
+    --bg-color: #f0f7f6;
+    --sidebar-bg: #ffffff;
+    --text-color: #005461;
+    --accent-color: #249E94;
+    --secondary-color: #3BC1A8;
 
-    --code-bg: #BCEAD5;
-    --output-bg: #BCEAD5;
+    --code-bg: #ffffff;
+    --output-bg: #eef8f7;
 
-    --border-color: rgba(0, 0, 0, 0.08);
+    --border-color: rgba(0, 84, 97, 0.12);
 
-    --user-msg-bg: linear-gradient(135deg, #9ED5C5, #8EC3B0);
+    --user-msg-bg: linear-gradient(135deg, #249E94, #0C7779);
     --user-msg-text: #ffffff;
 
-    --ai-msg-bg: #BCEAD5;
-    --ai-msg-text: #212529;
-    --ai-msg-border: rgba(0, 0, 0, 0.08);
+    --ai-msg-bg: #ffffff;
+    --ai-msg-text: #005461;
+    --ai-msg-border: rgba(0, 84, 97, 0.08);
 }
+
 
 
 /* ================= Global ================= */
