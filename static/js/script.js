@@ -2,15 +2,39 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatContainer = document.getElementById('chat-container');
     const messageInput = document.getElementById('message-input');
     const sendBtn = document.getElementById('send-btn');
-    const editor = document.getElementById('code-editor');
-    const runBtn = document.getElementById('run-btn');
     const outputPanel = document.getElementById('output-content');
     const themeToggle = document.getElementById('theme-toggle');
     const sidebar = document.getElementById('code-sidebar');
     const toggleSidebarBtn = document.getElementById('toggle-sidebar');
     const aiLoading = document.getElementById('ai-loading');
 
+    let monacoEditor;
+
+    // Load Monaco Editor
+    require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs' } });
+    require(['vs/editor/editor.main'], function () {
+        monacoEditor = monaco.editor.create(document.getElementById('monaco-editor'), {
+            value: "# Your code will appear here...",
+            language: 'python',
+            theme: 'vs-dark',
+            automaticLayout: true,
+            fontSize: 14,
+            minimap: { enabled: false },
+            roundedSelection: true,
+            scrollbar: {
+                vertical: 'visible',
+                horizontal: 'visible',
+                useShadows: false,
+                verticalHasArrows: false,
+                horizontalHasArrows: false,
+                verticalScrollbarSize: 10,
+                horizontalScrollbarSize: 10
+            }
+        });
+    });
+
     // Toggle Sidebar
+
     toggleSidebarBtn.addEventListener('click', () => {
         sidebar.classList.toggle('collapsed');
     });
@@ -20,6 +44,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const currentTheme = document.documentElement.getAttribute('data-theme');
         const newTheme = currentTheme === 'light' ? 'dark' : 'light';
         document.documentElement.setAttribute('data-theme', newTheme);
+
+        // Update Monaco Theme
+        if (monacoEditor) {
+            monaco.editor.setTheme(newTheme === 'light' ? 'vs' : 'vs-dark');
+        }
 
         const icon = themeToggle.querySelector('i');
         if (newTheme === 'light') {
@@ -85,7 +114,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Run Code
     runBtn.addEventListener('click', async () => {
-        const code = editor.value;
+        if (!monacoEditor) return;
+        const code = monacoEditor.getValue();
         if (!code.trim()) return;
 
         outputPanel.innerHTML = '<span class="text-muted">Running...</span>'; // Use innerHTML to reset style
@@ -171,7 +201,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 editRunBtn.title = 'Edit and run in editor';
                 editRunBtn.onclick = () => {
                     const code = pre.querySelector('code').innerText;
-                    editor.value = code;
+                    if (monacoEditor) {
+                        monacoEditor.setValue(code);
+                    }
                     sidebar.classList.remove('collapsed');
                     runBtn.click(); // Trigger run
                 };
@@ -203,8 +235,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Helper: Puts code into editor automatically if found
     function extractCodeToEditor(text) {
         const match = text.match(/```python\s([\s\S]*?)```/);
-        if (match && match[1]) {
-            editor.value = match[1].trim();
+        if (match && match[1] && monacoEditor) {
+            monacoEditor.setValue(match[1].trim());
         }
     }
 });
