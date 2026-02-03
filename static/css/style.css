@@ -452,8 +452,77 @@ body {
 }
 
 /* ================= Code/Terminal ================= */
-.editor-textarea,
-.output-panel,
-.code-block {
-    font-family: 'JetBrains Mono', monospace;
+/* ================= Welcome Hero ================= */
+.welcome-section {
+    min-height: 80vh;
+    animation: fadeIn 1s ease-out;
+}
+
+.text-accent {
+    color: var(--accent-color);
+}
+
+.feature-card {
+    border-radius: 20px;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: default;
+}
+
+.feature-card:hover {
+    transform: translateY(-10px);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--accent-color);
+}
+
+[data-theme="light"] .feature-card:hover {
+    background: rgba(255, 255, 255, 1);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+}
+
+.suggestion-chip {
+    transition: all 0.2s ease;
+    border: 1px solid var(--border-color);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.suggestion-chip:hover {
+    background: var(--accent-color) !important;
+    color: white !important;
+    border-color: var(--accent-color) !important;
+    transform: scale(1.05);
+}
+
+@keyframes float {
+    0% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-20px);
+    }
+
+    100% {
+        transform: translateY(0px);
+    }
+}
+
+.animate-float {
+    animation: float 4s ease-in-out infinite;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ================= Final Footer fixes ================= */
+.app-footer {
+    border-top: 1px solid var(--border-color);
 }

@@ -52,14 +52,21 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ================== Send Message ==================
-    async function sendMessage() {
-        const message = messageInput?.value.trim();
+    async function sendMessage(text) {
+        const message = text || messageInput?.value.trim();
         if (!message) return;
+
+        // Hide Welcome Hero on first message
+        const hero = document.getElementById('welcome-hero');
+        if (hero) hero.remove();
 
         appendMessage('user', message);
         if (messageInput) messageInput.value = '';
         if (messageInput) messageInput.disabled = true;
         if (sendBtn) sendBtn.disabled = true;
+
+        // ... rest of sendMessage
+
 
         aiLoading?.classList.remove('d-none');
         chatContainer.scrollTop = chatContainer.scrollHeight;
@@ -221,4 +228,13 @@ document.addEventListener('DOMContentLoaded', () => {
             monacoEditor.setValue(match[1].trim());
         }
     }
+
+    // Handle Suggestion Chips
+    document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('suggestion-chip')) {
+            const text = e.target.innerText.replace(/"/g, '');
+            sendMessage(text);
+        }
+    });
 });
+
