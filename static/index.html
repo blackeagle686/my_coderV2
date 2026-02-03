@@ -34,14 +34,17 @@
         <nav class="navbar navbar-expand-lg border-bottom">
             <div class="container-fluid">
                 <div class="d-flex align-items-center gap-2">
-                    <i class="bi bi-cpu fs-4"></i>
-                    <span class="navbar-brand mb-0">AI Coder Assistant</span>
+                    <i class="bi bi-cpu fs-4" style="color: var(--accent-color);"></i>
+                    <span class="navbar-brand mb-0">AI Coder PRO</span>
                 </div>
 
                 <div class="d-flex align-items-center gap-2">
+                    <button id="toggle-sidebar" class="btn btn-outline-secondary btn-sm me-2">
+                        <i class="bi bi-layout-sidebar-reverse"></i>
+                        <span class="d-none d-md-inline ms-1">Toggle Editor</span>
+                    </button>
                     <button id="theme-toggle" class="btn btn-outline-secondary btn-sm">
                         <i class="bi bi-sun"></i>
-                        <span class="ms-1">Light Mode</span>
                     </button>
                 </div>
             </div>
@@ -49,84 +52,80 @@
     </header>
 
     <!-- ================= Main Layout ================= -->
-    <main class="container-fluid app-container py-3">
-        <div class="row g-3 app-layout">
+    <main class="app-container">
+        <div class="app-content d-flex">
 
-            <!-- ============ Chat Panel ============ -->
-            <section class="col-lg-6 col-md-12 app-panel chat-panel d-flex flex-column">
-
-                <!-- Chat Messages -->
-                <div class="card flex-grow-1 border-0 chat-card">
-                    <div id="chat-container" class="card-body chat-messages">
-
-                        <!-- AI Welcome Message -->
-                        <div class="chat-message ai-message">
-                            <div class="message-avatar">
-                                <i class="bi bi-robot"></i>
-                            </div>
-                            <div class="message-content">
-                                <p>Hello! I am your AI Coder Assistant.</p>
-                                <p>Try asking: <b>"Write a Fibonacci function"</b></p>
-                            </div>
+            <!-- ============ Chat Panel (Main) ============ -->
+            <section id="chat-panel" class="chat-panel flex-grow-1 d-flex flex-column">
+                <div id="chat-container" class="chat-messages flex-grow-1">
+                    <!-- AI Welcome Message -->
+                    <div class="chat-message ai-message">
+                        <div class="message-avatar">
+                            <i class="bi bi-robot"></i>
                         </div>
-
+                        <div class="message-content">
+                            <p>Welcome to <b>AI Coder PRO</b>! How can I help you code today?</p>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Chat Input -->
-                <div class="chat-input mt-3">
-                    <div class="input-group">
-                        <textarea id="message-input" class="form-control" rows="2"
-                            placeholder="Ask me to write, explain, or debug code..."></textarea>
-
-                        <button id="send-btn" class="btn btn-primary">
-                            <i class="bi bi-send"></i>
-                            <span class="ms-1">Send</span>
-                        </button>
+                <!-- Loading Indicator (Hidden by default) -->
+                <div id="ai-loading" class="ai-loading d-none">
+                    <div class="typing-indicator">
+                        <span></span><span></span><span></span>
                     </div>
+                    <span class="ms-2 text-muted small">AI is thinking...</span>
                 </div>
-
             </section>
 
-            <!-- ============ Code Panel ============ -->
-            <section class="col-lg-6 col-md-12 app-panel code-panel d-flex flex-column">
-
-                <!-- Editor -->
-                <div class="card flex-grow-1 mb-3 border-0 editor-card">
-                    <div class="card-header d-flex align-items-center justify-content-between">
-                        <div class="d-flex align-items-center gap-2">
-                            <i class="bi bi-code-slash"></i>
-                            <span class="fw-semibold">Python Editor</span>
+            <!-- ============ Code Sidebar (Collapsible) ============ -->
+            <aside id="code-sidebar" class="code-sidebar glass-effect">
+                <div class="sidebar-inner d-flex flex-column h-100 p-3">
+                    <!-- Editor Part -->
+                    <div class="editor-section flex-grow-1 d-flex flex-column mb-3">
+                        <div class="section-header d-flex justify-content-between align-items-center mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-code-slash text-success"></i>
+                                <span class="fw-bold small">EDITOR</span>
+                            </div>
+                            <button id="run-btn" class="btn btn-sm btn-success py-0 px-3">
+                                <i class="bi bi-play-fill"></i> Run
+                            </button>
                         </div>
-
-                        <button id="run-btn" class="btn btn-sm btn-success">
-                            <i class="bi bi-play-fill"></i>
-                            <span class="ms-1">Run</span>
-                        </button>
+                        <textarea id="code-editor" class="editor-textarea h-100"
+                            placeholder="# Code will appear here..."></textarea>
                     </div>
 
-                    <div class="editor-wrapper flex-grow-1">
-                        <textarea id="code-editor" class="editor-textarea"
-                            placeholder="# Your generated code will appear here..."></textarea>
-                    </div>
-                </div>
-
-                <!-- Output -->
-                <div class="card border-0 output-card">
-                    <div class="card-header d-flex align-items-center gap-2">
-                        <i class="bi bi-terminal"></i>
-                        <span class="fw-semibold">Execution Output</span>
-                    </div>
-
-                    <div id="output-content" class="output-panel">
-                        <span class="text-muted">Waiting for execution...</span>
+                    <!-- Output Part (Bottom of Sidebar) -->
+                    <div class="output-section" style="height: 35%;">
+                        <div class="section-header mb-2 d-flex align-items-center gap-2">
+                            <i class="bi bi-terminal text-info"></i>
+                            <span class="fw-bold small">OUTPUT</span>
+                        </div>
+                        <div id="output-content" class="output-panel h-100">
+                            <span class="text-muted small">Waiting for execution...</span>
+                        </div>
                     </div>
                 </div>
-
-            </section>
+            </aside>
 
         </div>
     </main>
+
+    <!-- ================= Footer (Fixed Input) ================= -->
+    <footer class="app-footer">
+        <div class="container-fluid">
+            <div class="input-wrapper mx-auto" style="max-width: 900px;">
+                <div class="input-group glass-effect rounded-pill p-1">
+                    <textarea id="message-input" class="form-control border-0 bg-transparent rounded-pill" rows="1"
+                        placeholder="Type your coding request..."></textarea>
+                    <button id="send-btn" class="btn btn-primary rounded-pill px-4 ms-2">
+                        <i class="bi bi-send"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </footer>
 
     <!-- ================= Scripts ================= -->
     <script src="/js/script.js"></script>

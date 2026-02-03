@@ -6,6 +6,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const runBtn = document.getElementById('run-btn');
     const outputPanel = document.getElementById('output-content');
     const themeToggle = document.getElementById('theme-toggle');
+    const sidebar = document.getElementById('code-sidebar');
+    const toggleSidebarBtn = document.getElementById('toggle-sidebar');
+    const aiLoading = document.getElementById('ai-loading');
+
+    // Toggle Sidebar
+    toggleSidebarBtn.addEventListener('click', () => {
+        sidebar.classList.toggle('collapsed');
+    });
 
     // Theme Toggle
     themeToggle.addEventListener('click', () => {
@@ -14,16 +22,58 @@ document.addEventListener('DOMContentLoaded', () => {
         document.documentElement.setAttribute('data-theme', newTheme);
 
         const icon = themeToggle.querySelector('i');
-        const span = themeToggle.querySelector('span');
-
         if (newTheme === 'light') {
             icon.className = 'bi bi-moon';
-            span.textContent = 'Dark Mode';
         } else {
             icon.className = 'bi bi-sun';
-            span.textContent = 'Light Mode';
         }
     });
+
+    // Send Message
+    async function sendMessage() {
+        const message = messageInput.value.trim();
+        if (!message) return;
+
+        appendMessage('user', message);
+        messageInput.value = '';
+        messageInput.disabled = true;
+        sendBtn.disabled = true;
+
+        // Show Loading
+        aiLoading.classList.remove('d-none');
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+
+        try {
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: message })
+            });
+
+            const data = await response.json();
+
+            // Hide Loading
+            aiLoading.classList.add('d-none');
+
+            if (response.ok) {
+                appendMessage('ai', data.response);
+                extractCodeToEditor(data.response);
+                // Automatically open sidebar if code is generated
+                if (data.response.includes('```')) {
+                    sidebar.classList.remove('collapsed');
+                }
+            } else {
+                appendMessage('ai', `Error: ${data.detail || 'Failed to get response'}`);
+            }
+        } catch (error) {
+            aiLoading.classList.add('d-none');
+            appendMessage('ai', `Network Error: ${error.message}`);
+        } finally {
+            messageInput.disabled = false;
+            sendBtn.disabled = false;
+            messageInput.focus();
+        }
+    }
 
     // ... [OMITTED SEND/RUN LOGIC] ...
 

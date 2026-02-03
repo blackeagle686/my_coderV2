@@ -57,11 +57,87 @@ body {
 
 /* ================= Layout ================= */
 .app-container {
-    height: calc(100vh - 56px);
+    flex-grow: 1;
+    display: flex;
+    overflow: hidden;
 }
 
 .app-panel {
     height: 100%;
+}
+
+.app-content {
+    width: 100%;
+    height: 100%;
+}
+
+.chat-panel {
+    position: relative;
+}
+
+/* ================= Sidebar ================= */
+.code-sidebar {
+    width: 450px;
+    height: 100%;
+    transition: margin-right 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s ease;
+    border-left: 1px solid var(--border-color);
+    z-index: 50;
+}
+
+.code-sidebar.collapsed {
+    margin-right: -450px;
+}
+
+/* ================= Footer Input ================= */
+.app-footer {
+    padding: 15px 0 25px 0;
+    z-index: 100;
+}
+
+.input-wrapper textarea {
+    max-height: 150px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+    font-size: 1rem;
+    box-shadow: none !important;
+}
+
+/* ================= Typing Indicator ================= */
+.ai-loading {
+    padding: 10px 25px;
+    display: flex;
+    align-items: center;
+}
+
+.typing-indicator span {
+    height: 6px;
+    width: 6px;
+    background: var(--accent-color);
+    display: inline-block;
+    border-radius: 50%;
+    margin-right: 3px;
+    animation: bounce 1.3s infinite;
+}
+
+.typing-indicator span:nth-child(2) {
+    animation-delay: 0.15s;
+}
+
+.typing-indicator span:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+@keyframes bounce {
+
+    0%,
+    60%,
+    100% {
+        transform: translateY(0);
+    }
+
+    30% {
+        transform: translateY(-4px);
+    }
 }
 
 /* ================= Cards ================= */
