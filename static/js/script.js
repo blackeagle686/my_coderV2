@@ -9,159 +9,134 @@ document.addEventListener('DOMContentLoaded', () => {
     const toggleSidebarBtn = document.getElementById('toggle-sidebar');
     const aiLoading = document.getElementById('ai-loading');
 
-
     let monacoEditor;
 
-    // Load Monaco Editor
-    require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs' } });
-    require(['vs/editor/editor.main'], function () {
-        monacoEditor = monaco.editor.create(document.getElementById('monaco-editor'), {
-            value: "# Your code will appear here...",
-            language: 'python',
-            theme: 'vs-dark',
-            automaticLayout: true,
-            fontSize: 14,
-            minimap: { enabled: false },
-            roundedSelection: true,
-            scrollbar: {
-                vertical: 'visible',
-                horizontal: 'visible',
-                useShadows: false,
-                verticalHasArrows: false,
-                horizontalHasArrows: false,
-                verticalScrollbarSize: 10,
-                horizontalScrollbarSize: 10
-            },
-            // Enhanced Autocomplete & Suggestions
-            suggestOnTriggerCharacters: true,
-            quickSuggestions: {
-                "other": true,
-                "comments": false,
-                "strings": true
-            },
-            parameterHints: {
-                enabled: true
-            },
-            tabCompletion: "on",
-            wordBasedSuggestions: "allDocuments",
-            bracketPairColorization: {
-                enabled: true
-            }
+    // ================== Monaco Editor ==================
+    if (document.getElementById('monaco-editor')) {
+        require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs' } });
+        require(['vs/editor/editor.main'], function () {
+            monacoEditor = monaco.editor.create(document.getElementById('monaco-editor'), {
+                value: "# Your code will appear here...",
+                language: 'python',
+                theme: 'vs-dark',
+                automaticLayout: true,
+                fontSize: 14,
+                minimap: { enabled: false },
+                roundedSelection: true,
+                scrollbar: { vertical: 'visible', horizontal: 'visible', useShadows: false },
+                suggestOnTriggerCharacters: true,
+                quickSuggestions: { other: true, comments: false, strings: true },
+                parameterHints: { enabled: true },
+                tabCompletion: "on",
+                wordBasedSuggestions: "allDocuments",
+                bracketPairColorization: { enabled: true }
+            });
         });
+    }
+
+    // ================== Toggle Sidebar ==================
+    toggleSidebarBtn?.addEventListener('click', () => {
+        sidebar?.classList.toggle('collapsed');
     });
 
-    // Toggle Sidebar
-
-    toggleSidebarBtn.addEventListener('click', () => {
-        sidebar.classList.toggle('collapsed');
-    });
-
-    // Theme Toggle
-    themeToggle.addEventListener('click', () => {
-        const currentTheme = document.documentElement.getAttribute('data-theme');
+    // ================== Theme Toggle ==================
+    themeToggle?.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
         const newTheme = currentTheme === 'light' ? 'dark' : 'light';
         document.documentElement.setAttribute('data-theme', newTheme);
 
-        // Update Monaco Theme
-        if (monacoEditor) {
-            monaco.editor.setTheme(newTheme === 'light' ? 'vs' : 'vs-dark');
-        }
+        monacoEditor && monaco.editor.setTheme(newTheme === 'light' ? 'vs' : 'vs-dark');
 
         const icon = themeToggle.querySelector('i');
-        if (newTheme === 'light') {
-            icon.className = 'bi bi-moon';
-        } else {
-            icon.className = 'bi bi-sun';
-        }
+        if (icon) icon.className = newTheme === 'light' ? 'bi bi-moon' : 'bi bi-sun';
     });
 
-    // Send Message
+    // ================== Send Message ==================
     async function sendMessage() {
-        const message = messageInput.value.trim();
+        const message = messageInput?.value.trim();
         if (!message) return;
 
         appendMessage('user', message);
-        messageInput.value = '';
-        messageInput.disabled = true;
-        sendBtn.disabled = true;
+        if (messageInput) messageInput.value = '';
+        if (messageInput) messageInput.disabled = true;
+        if (sendBtn) sendBtn.disabled = true;
 
-        // Show Loading
-        aiLoading.classList.remove('d-none');
+        aiLoading?.classList.remove('d-none');
         chatContainer.scrollTop = chatContainer.scrollHeight;
 
         try {
             const response = await fetch('/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: message })
+                body: JSON.stringify({ message })
             });
 
             const data = await response.json();
-
-            // Hide Loading
-            aiLoading.classList.add('d-none');
+            aiLoading?.classList.add('d-none');
 
             if (response.ok) {
                 appendMessage('ai', data.response);
                 extractCodeToEditor(data.response);
-                // Automatically open sidebar if code is generated
-                if (data.response.includes('```')) {
-                    sidebar.classList.remove('collapsed');
-                }
+                if (data.response.includes('```')) sidebar?.classList.remove('collapsed');
             } else {
                 appendMessage('ai', `Error: ${data.detail || 'Failed to get response'}`);
             }
         } catch (error) {
-            aiLoading.classList.add('d-none');
+            aiLoading?.classList.add('d-none');
             appendMessage('ai', `Network Error: ${error.message}`);
         } finally {
-            messageInput.disabled = false;
-            sendBtn.disabled = false;
-            messageInput.focus();
+            if (messageInput) messageInput.disabled = false;
+            if (sendBtn) sendBtn.disabled = false;
+            messageInput?.focus();
         }
     }
 
-    sendBtn.addEventListener('click', sendMessage);
-    messageInput.addEventListener('keypress', (e) => {
+    sendBtn?.addEventListener('click', sendMessage);
+    messageInput?.addEventListener('keypress', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             sendMessage();
         }
     });
 
-    // Run Code
-    runBtn.addEventListener('click', async () => {
+    // ================== Run Code ==================
+    runBtn?.addEventListener('click', async () => {
         if (!monacoEditor) return;
+
         const code = monacoEditor.getValue();
         if (!code.trim()) return;
 
-        outputPanel.innerHTML = '<span class="text-muted">Running...</span>'; // Use innerHTML to reset style
+        if (outputPanel) outputPanel.innerHTML = '<span class="text-muted">Running...</span>';
 
         try {
             const response = await fetch('/api/execute', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ code: code })
+                body: JSON.stringify({ code })
             });
 
             const result = await response.json();
 
+            if (!outputPanel) return;
+
             if (result.error) {
                 outputPanel.textContent = `Error:\n${result.stderr}`;
-                outputPanel.style.color = '#ff6b6b'; // Custom danger color
+                outputPanel.style.color = '#ff6b6b';
             } else {
                 outputPanel.textContent = result.stdout || '[No Output]';
                 outputPanel.style.color = 'var(--text-color)';
             }
         } catch (error) {
-            outputPanel.textContent = `Execution Error: ${error.message}`;
-            outputPanel.style.color = '#ff6b6b';
+            if (outputPanel) {
+                outputPanel.textContent = `Execution Error: ${error.message}`;
+                outputPanel.style.color = '#ff6b6b';
+            }
         }
     });
 
-    // Configure Marked
+    // ================== Marked Config ==================
     marked.setOptions({
-        highlight: function (code, lang) {
+        highlight: (code, lang) => {
             const language = hljs.getLanguage(lang) ? lang : 'python';
             return hljs.highlight(code, { language }).value;
         },
@@ -170,70 +145,61 @@ document.addEventListener('DOMContentLoaded', () => {
         gfm: true
     });
 
-    // Helper: Append Message
+    // ================== Helpers ==================
     function appendMessage(role, text) {
+        if (!chatContainer) return;
+
         const messageDiv = document.createElement('div');
         messageDiv.className = `chat-message ${role}-message`;
 
-        // Avatar
         const avatarDiv = document.createElement('div');
         avatarDiv.className = 'message-avatar';
         const icon = document.createElement('i');
         icon.className = role === 'ai' ? 'bi bi-robot' : 'bi bi-person-fill';
         avatarDiv.appendChild(icon);
 
-        // Content
         const contentDiv = document.createElement('div');
         contentDiv.className = 'message-content';
 
         if (role === 'ai') {
-            // Use marked for full markdown support
             contentDiv.innerHTML = marked.parse(text);
 
-            // Post-processing for code blocks (Add Buttons)
             contentDiv.querySelectorAll('pre').forEach((pre) => {
                 const container = document.createElement('div');
                 container.className = 'code-container position-relative';
 
-                // Button Group
                 const btnGroup = document.createElement('div');
                 btnGroup.className = 'code-actions position-absolute top-0 end-0 p-2 d-flex gap-2';
 
-                // Copy Button
                 const copyBtn = document.createElement('button');
                 copyBtn.className = 'btn btn-sm btn-dark opacity-75';
                 copyBtn.innerHTML = '<i class="bi bi-clipboard"></i>';
                 copyBtn.title = 'Copy code';
                 copyBtn.onclick = () => {
-                    const code = pre.querySelector('code').innerText;
+                    const code = pre.querySelector('code')?.innerText || '';
                     navigator.clipboard.writeText(code);
                     copyBtn.innerHTML = '<i class="bi bi-check2"></i>';
                     setTimeout(() => copyBtn.innerHTML = '<i class="bi bi-clipboard"></i>', 2000);
                 };
 
-                // Edit & Run Button
                 const editRunBtn = document.createElement('button');
                 editRunBtn.className = 'btn btn-sm btn-dark opacity-75';
                 editRunBtn.innerHTML = '<i class="bi bi-pencil-square"></i> Edit & Run';
                 editRunBtn.title = 'Edit and run in editor';
                 editRunBtn.onclick = () => {
-                    const code = pre.querySelector('code').innerText;
-                    if (monacoEditor) {
-                        monacoEditor.setValue(code);
-                    }
-                    sidebar.classList.remove('collapsed');
-                    runBtn.click(); // Trigger run
+                    const code = pre.querySelector('code')?.innerText || '';
+                    if (monacoEditor) monacoEditor.setValue(code);
+                    sidebar?.classList.remove('collapsed');
+                    runBtn?.click();
                 };
 
                 btnGroup.appendChild(copyBtn);
                 btnGroup.appendChild(editRunBtn);
 
-                // Wrap pre
                 pre.parentNode.insertBefore(container, pre);
                 container.appendChild(btnGroup);
                 container.appendChild(pre);
 
-                // Highlight code
                 const codeBlock = pre.querySelector('code');
                 if (codeBlock) hljs.highlightElement(codeBlock);
             });
@@ -249,10 +215,9 @@ document.addEventListener('DOMContentLoaded', () => {
         chatContainer.scrollTop = chatContainer.scrollHeight;
     }
 
-    // Helper: Puts code into editor automatically if found
     function extractCodeToEditor(text) {
         const match = text.match(/```python\s([\s\S]*?)```/);
-        if (match && match[1] && monacoEditor) {
+        if (match?.[1] && monacoEditor) {
             monacoEditor.setValue(match[1].trim());
         }
     }
