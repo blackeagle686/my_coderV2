@@ -31,9 +31,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message: message })
             });
-            
+
             const data = await response.json();
-            
+
             if (response.ok) {
                 appendMessage('ai', data.response);
                 extractCodeToEditor(data.response);
@@ -63,16 +63,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!code.trim()) return;
 
         outputPanel.textContent = 'Running...';
-        
+
         try {
             const response = await fetch('/api/execute', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ code: code })
             });
-            
+
             const result = await response.json();
-            
+
             if (result.error) {
                 outputPanel.textContent = `Error:\n${result.stderr}`;
                 outputPanel.style.color = 'var(--bs-danger)';
@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function appendMessage(role, text) {
         const div = document.createElement('div');
         div.className = `message ${role}-message`;
-        
+
         // Simple markdown parsing for code blocks
         // This is a naive implementation; for production use a library like 'marked'
         if (role === 'ai') {
@@ -97,18 +97,33 @@ document.addEventListener('DOMContentLoaded', () => {
             parts.forEach((part, index) => {
                 if (index % 2 === 1) {
                     // Code block
-                    const codeDiv = document.createElement('div');
+                    const codeDiv = document.createElement('pre'); // Use pre for hljs
                     codeDiv.className = 'code-block';
-                    // Strip language identifier (first line)
+                    const code = document.createElement('code');
+
+                    // Detect language if possible (first line)
                     const lines = part.split('\n');
-                    const codeContent = lines.slice(1).join('\n'); // remove first line (e.g. 'python')
-                    codeDiv.textContent = codeContent.trim();
+                    let language = 'python'; // Default
+                    let codeContent = part;
+
+                    if (lines[0].trim().length > 0 && !lines[0].includes('=')) {
+                        language = lines[0].trim();
+                        codeContent = lines.slice(1).join('\n');
+                    }
+
+                    code.className = `language-${language}`;
+                    code.textContent = codeContent.trim();
+
+                    codeDiv.appendChild(code);
                     div.appendChild(codeDiv);
+
+                    // Apply Highlighting
+                    hljs.highlightElement(code);
                 } else {
                     // Normal text
                     const p = document.createElement('p');
                     p.innerHTML = part.replace(/\n/g, '<br>').trim();
-                    if(p.textContent) div.appendChild(p);
+                    if (p.textContent) div.appendChild(p);
                 }
             });
         } else {

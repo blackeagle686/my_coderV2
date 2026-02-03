@@ -1,28 +1,36 @@
 :root {
-    /* Default Theme (Dark Modern) */
-    --bg-color: #1a1a1a;
-    --sidebar-bg: #2d2d2d;
+    /* Custom Palette Theme */
+    --bg-color: #2B2E4A;
+    /* Main Background */
+    --sidebar-bg: #53354A;
+    /* Sidebar / Panels */
     --text-color: #e0e0e0;
-    --accent-color: #0d6efd;
-    --code-bg: #121212;
-    --output-bg: #212121;
-    --border-color: #444;
-    --user-msg-bg: #0d6efd;
+    --accent-color: #E84545;
+    /* Primary Action / User Message */
+    --secondary-color: #903749;
+    /* Secondary / Borders / Hover */
+    --code-bg: #1e1e1e;
+    /* VS Code Dark BG */
+    --output-bg: #1e1e1e;
+    --border-color: #53354A;
+    --user-msg-bg: #E84545;
     --user-msg-text: #ffffff;
-    --ai-msg-bg: #2d2d2d;
+    --ai-msg-bg: #53354A;
     --ai-msg-text: #e0e0e0;
 }
 
 [data-theme="light"] {
-    /* Light Theme */
+    /* Light Theme (Preserved but can be adjusted if needed) */
     --bg-color: #f8f9fa;
     --sidebar-bg: #ffffff;
     --text-color: #212529;
-    --accent-color: #0d6efd;
+    --accent-color: #E84545;
+    /* Keep accent info */
+    --secondary-color: #903749;
     --code-bg: #f1f3f5;
     --output-bg: #ffffff;
     --border-color: #dee2e6;
-    --user-msg-bg: #0d6efd;
+    --user-msg-bg: #E84545;
     --user-msg-text: #ffffff;
     --ai-msg-bg: #e9ecef;
     --ai-msg-text: #212529;
@@ -33,6 +41,24 @@ body {
     color: var(--text-color);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     transition: background-color 0.3s, color 0.3s;
+}
+
+/* Scrollbar Styling for that 'IDE' feel */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-color);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--secondary-color);
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-color);
 }
 
 .chat-container {
@@ -99,16 +125,20 @@ body {
 
 .editor-textarea {
     background-color: var(--code-bg);
-    color: var(--text-color);
-    border: 1px solid var(--border-color);
-    font-family: monospace;
+    color: #d4d4d4;
+    /* VS Code Default Text */
+    border: 1px solid var(--secondary-color);
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
     width: 100%;
     height: 300px;
     padding: 10px;
     resize: vertical;
+    font-size: 14px;
+    line-height: 1.5;
 }
 
 .editor-textarea:focus {
     outline: none;
     border-color: var(--accent-color);
+    box-shadow: 0 0 5px var(--secondary-color);
 }
