@@ -294,5 +294,8 @@ document.addEventListener('DOMContentLoaded', () => {
             sendMessage(text);
         }
     });
+    console.log("Chat History:")
+    console.log(chatHistory)
+    console.log("Summary:")
+    console.log(currentSummary)
 });
-
