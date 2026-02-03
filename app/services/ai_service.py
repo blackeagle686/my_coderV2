@@ -2,6 +2,18 @@ import abc
 import time
 import logging
 
+try:
+    import torch
+    HAS_TORCH = True
+except ImportError:
+    HAS_TORCH = False
+
+try:
+    from transformers import AutoModelForCausalLM, AutoTokenizer
+    HAS_TRANSFORMERS = True
+except ImportError:
+    HAS_TRANSFORMERS = False
+
 # Configure logging
 logger = logging.getLogger(__name__)
 
@@ -22,7 +34,7 @@ class MockAIService(BaseAIService):
     """Mock implementation for testing fallback scenarios."""
     
     def generate_response(self, prompt: str, history: list = None) -> str:
-        time.sleep(1) # Simulate inference latency
+        time.sleep(1)  # Simulate inference latency
         history_len = len(history) if history else 0
         return f"""[MOCK RESPONSE - Qwen Model Not Loaded]
         
@@ -43,31 +55,28 @@ class QwenAIService(BaseAIService):
         self._device = "cuda" if self._is_cuda_available() else "cpu"
         
         # Optimize: Enable TF32 if supported
-        if self._device == "cuda":
+        if self._device == "cuda" and HAS_TORCH:
             try:
-                import torch
                 torch.backends.cuda.matmul.allow_tf32 = True
                 logger.info("CUDA TF32 enabled.")
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(f"Failed to enable TF32: {e}")
 
     def _is_cuda_available(self):
-        try:
-            import torch
-            return torch.cuda.is_available()
-        except ImportError:
+        if not HAS_TORCH:
             return False
+        return torch.cuda.is_available()
 
     def _load_model(self):
         """Loads the model and tokenizer. Called once at startup."""
         if self._model is not None:
             return
 
+        if not HAS_TRANSFORMERS or not HAS_TORCH:
+            raise ImportError("torch or transformers not installed.")
+
         logger.info(f"Loading Model {self.MODEL_NAME} on {self._device}...")
         try:
-            import torch
-            from transformers import AutoModelForCausalLM, AutoTokenizer
-
             self._tokenizer = AutoTokenizer.from_pretrained(self.MODEL_NAME)
             
             # Load model with optimizations
@@ -92,8 +101,6 @@ class QwenAIService(BaseAIService):
         try:
             if self._model is None:
                 self._load_model()
-
-            import torch
             
             # Construct a prompt for summarization
             history_text = ""
@@ -145,8 +152,6 @@ SUMMARY:"""
         try:
             if self._model is None:
                 self._load_model()
-            
-            import torch
             
             messages = [
                 {"role": "system", "content": "You are Qwen, a helpful and comprehensive AI Coding Assistant. You can write code, debug, and explain concepts."}
@@ -202,11 +207,10 @@ def get_ai_service() -> BaseAIService:
         return _ai_service
 
     try:
-        import torch
-        import transformers
-        
+        if not HAS_TORCH or not HAS_TRANSFORMERS:
+            raise ImportError("AI dependencies missing.")
+
         service = QwenAIService()
-        # Explicitly load model on creation (Startup)
         service._load_model()
         
         _ai_service = service
@@ -216,7 +220,3 @@ def get_ai_service() -> BaseAIService:
         logger.warning(f"Failed to initialize QwenAIService ({e}). Using MockAIService.")
         _ai_service = MockAIService()
         return _ai_service
-
-# Export a function to get it, rather than the instance directly, 
-# though main.py can call this at startup.
-
