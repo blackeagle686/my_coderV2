@@ -202,7 +202,15 @@ body {
 }
 
 /* ================= Chat ================= */
+.chat-panel {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
 .chat-messages {
+    flex: 1;
     padding: 20px;
     display: flex;
     flex-direction: column;
@@ -212,18 +220,26 @@ body {
     scrollbar-gutter: stable;
 }
 
+/* ================= Message Wrapper ================= */
 .chat-message {
     display: flex;
+    align-items: flex-start;
     gap: 10px;
-    max-width: 85%;
-    animation: fadeInSlide 0.4s ease-out forwards;
+    max-width: min(85%, 720px);
+    animation: fadeInSlide 0.35s ease-out forwards;
+    word-break: break-word;
 }
 
+/* ================= Avatar ================= */
 .chat-message .message-avatar {
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--secondary-color), var(--accent-color));
+    background: linear-gradient(
+        135deg,
+        var(--secondary-color),
+        var(--accent-color)
+    );
     display: flex;
     align-items: center;
     justify-content: center;
@@ -231,12 +247,39 @@ body {
     box-shadow: 0 4px 12px rgba(232, 69, 69, 0.3);
 }
 
+/* ================= Message Bubble ================= */
 .chat-message .message-content {
     padding: 12px 14px;
     border-radius: 14px;
     line-height: 1.55;
     font-size: 0.95rem;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
 }
+
+/* ================= AI Message ================= */
+.ai-message {
+    align-self: flex-start;
+}
+
+.ai-message .message-content {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--ai-msg-text);
+}
+
+/* ================= User Message ================= */
+.user-message {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+}
+
+.user-message .message-content {
+    background: var(--user-msg-bg);
+    color: var(--user-msg-text);
+    box-shadow: 0 4px 15px rgba(232, 69, 69, 0.25);
+}
+
 
 /* AI */
 .ai-message {
