@@ -139,12 +139,14 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!outputPanel) return;
 
             if (result.error) {
-                outputPanel.textContent = `Error:\n${result.stderr}`;
+                outputPanel.textContent = `Error:\n${result.stderr || 'Unknown execution error'}`;
                 outputPanel.style.color = '#ff6b6b';
             } else {
-                outputPanel.textContent = result.stdout || '[No Output]';
+                const output = result.stdout || result.stderr || '[No output received]';
+                outputPanel.textContent = output;
                 outputPanel.style.color = 'var(--text-color)';
             }
+
         } catch (error) {
             if (outputPanel) {
                 outputPanel.textContent = `Execution Error: ${error.message}`;
@@ -235,11 +237,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function extractCodeToEditor(text) {
-        const match = text.match(/```python\s([\s\S]*?)```/);
+        // Try Python specific block first
+        let match = text.match(/```python\s([\s\S]*?)```/);
+
+        // Fallback to generic block if no python block found
+        if (!match) {
+            match = text.match(/```\s?([\s\S]*?)```/);
+        }
+
         if (match?.[1] && monacoEditor) {
-            monacoEditor.setValue(match[1].trim());
+            const code = match[1].trim();
+            monacoEditor.setValue(code);
+            // Ensure sidebar is visible when code is extracted
+            sidebar?.classList.remove('collapsed');
         }
     }
+
 
     // Handle Suggestion Chips
     document.addEventListener('click', (e) => {

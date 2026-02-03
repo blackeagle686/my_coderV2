@@ -63,18 +63,10 @@
             <section id="chat-panel" class="chat-panel flex-grow-1 d-flex flex-column">
                 <div id="chat-container" class="chat-messages flex-grow-1">
                     <!-- AI Welcome Message -->
-                    <div class="chat-message ai-message">
-                        <div class="message-avatar">
-                            <i class="bi bi-robot"></i>
-                        </div>
-                        <div class="message-content">
-                            <p>Welcome to <b>My Coder </b>! How can I help you code today?</p>
-                        </div>
-                    </div>
-
+                    
                     <!-- Welcome Hero Section -->
                     <div id="welcome-hero"
-                        class="welcome-section d-flex flex-column align-items-center justify-content-center text-center p-5">
+                        class="p-3 welcome-section d-flex flex-column align-items-center justify-content-center text-center p-5">
                         <div class="hero-icon mb-4">
                             <i class="bi bi-rocket-takeoff-fill display-1 text-accent animate-float"></i>
                         </div>
@@ -119,11 +111,19 @@
                             <button class="btn btn-outline-secondary btn-sm rounded-pill px-3 suggestion-chip">"Show me
                                 how to use list comprehensions"</button>
                             <button class="btn btn-outline-secondary btn-sm rounded-pill px-3 suggestion-chip">"How do I
-                                use decorator in Python?"</button>
+                                use abstraction in Python?"</button>
                         </div>
                     </div>
 
                     <!-- Messages will be appended here -->
+                </div>
+                <div class="chat-message ai-message">
+                    <div class="message-avatar">
+                        <i class="bi bi-robot"></i>
+                    </div>
+                    <div class="message-content">
+                        <p>Welcome to <b>My Coder </b>! How can I help you code today?</p>
+                    </div>
                 </div>
 
 
@@ -132,7 +132,7 @@
                     <div class="typing-indicator">
                         <span></span><span></span><span></span>
                     </div>
-                    <span class="ms-2 text-muted small">AI is thinking...</span>
+                    <span class="ms-2 text-primary small">AI is thinking...</span>
                 </div>
             </section>
 
@@ -151,9 +151,9 @@
                             </button>
                         </div>
                         <div id="monaco-editor" class="flex-grow-1 border rounded"
-                            style="min-height: 400px; background: #1e1e1e;"></div>
+                        style="min-height: 400px; background: #1e1e1e;"></div>
                     </div>
-
+                    
 
                     <!-- Output Part (Bottom of Sidebar) -->
                     <div class="output-section" style="height: 35%;">

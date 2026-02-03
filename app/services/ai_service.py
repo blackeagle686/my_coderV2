@@ -8,9 +8,6 @@ logger = logging.getLogger(__name__)
 class BaseAIService(abc.ABC):
     """Abstract base class for AI Services."""
     
-class BaseAIService(abc.ABC):
-    """Abstract base class for AI Services."""
-    
     @abc.abstractmethod
     def generate_response(self, prompt: str, history: list = None) -> str:
         """Generate a response for the given prompt, optionally considering history."""
@@ -40,6 +37,11 @@ def mock_code():
 """
 
 # ... [Imports and Base Classes remain the same] ...
+
+class QwenAIService(BaseAIService):
+    """Real implementation using Qwen Coder model."""
+    
+    MODEL_NAME = "Qwen/Qwen2.5-Coder-3B-Instruct"
 
     def __init__(self):
         self._model = None
@@ -107,7 +109,9 @@ def mock_code():
             
             # Add History (last 20 messages)
             if history:
+                print(f"Processing history: {len(history)} messages")
                 # History is list of {"role": "user/ai", "content": "..."}
+
                 # Qwen expects "assistant" role instead of "ai"
                 formatted_history = []
                 for msg in history[-20:]: # Last 20
@@ -131,10 +135,11 @@ def mock_code():
             with torch.inference_mode():
                 generated_ids = self._model.generate(
                     **model_inputs,
-                    max_new_tokens=512, # Reduced from 1024
+                    max_new_tokens=1024, # Increased back to 1024 for complex code
                     temperature=0.2,
                     top_p=0.9
                 )
+
             
             generated_ids = [
                 output_ids[len(input_ids):] for input_ids, output_ids in zip(model_inputs.input_ids, generated_ids)
@@ -145,7 +150,7 @@ def mock_code():
 
         except Exception as e:
             logger.error(f"LLM Generation Error: {e}")
-            return f"Error regarding LLM: {str(e)}\n\n" + MockAIService().generate_response(prompt)
+            return f"Error regarding LLM: {str(e)}\n\n" + MockAIService().generate_response(prompt, history=history)
 
 # Singleton Instance
 _ai_service = None
