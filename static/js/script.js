@@ -75,7 +75,42 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // ... [OMITTED SEND/RUN LOGIC] ...
+    sendBtn.addEventListener('click', sendMessage);
+    messageInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+
+    // Run Code
+    runBtn.addEventListener('click', async () => {
+        const code = editor.value;
+        if (!code.trim()) return;
+
+        outputPanel.innerHTML = '<span class="text-muted">Running...</span>'; // Use innerHTML to reset style
+
+        try {
+            const response = await fetch('/api/execute', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code: code })
+            });
+
+            const result = await response.json();
+
+            if (result.error) {
+                outputPanel.textContent = `Error:\n${result.stderr}`;
+                outputPanel.style.color = '#ff6b6b'; // Custom danger color
+            } else {
+                outputPanel.textContent = result.stdout || '[No Output]';
+                outputPanel.style.color = 'var(--text-color)';
+            }
+        } catch (error) {
+            outputPanel.textContent = `Execution Error: ${error.message}`;
+            outputPanel.style.color = '#ff6b6b';
+        }
+    });
 
     // Helper: Append Message
     function appendMessage(role, text) {
