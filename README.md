@@ -38,30 +38,38 @@ AI Coder Assistant is designed to bridge the gap between AI-driven code generati
 
 ## 📐 Workflow and Architecture
 
-The application follows a client-server architecture with a specialized focus on safe code execution and intelligent dialogue.
+The system follows a modular agent architecture with secure execution and AI reasoning services.
 
 ```mermaid
 graph TD
-    User((User)) <--> UI[Frontend Interface]
-    UI <--> API[FastAPI Backend]
-    
-    subgraph "Backend Services"
-        API <--> AI[Qwen AI Service]
-        API --> Sandbox[AST Sandbox]
-    end
-    
-    subgraph "AI Processing"
-        AI --> LLM[Qwen2.5-Coder-3B]
-        AI --> Summary[Context Summarizer]
-    end
-    
-    subgraph "Execution"
-        Sandbox --> Validator{AST Validator}
-        Validator -- Safe --> Python[Python Executor]
-        Validator -- Unsafe --> Error[Security Error]
-    end
-```
 
+User((User)) <---> UI[Frontend UI]
+
+UI <---> API[FastAPI Backend]
+
+subgraph Backend
+API --> AI[AI Service]
+API --> Sandbox[Code Sandbox]
+end
+
+subgraph AI_System
+AI --> LLM[Qwen2.5-Coder-3B]
+AI --> Memory[Context Summarizer]
+end
+
+subgraph Secure_Execution
+Sandbox --> Validator{AST Security Check}
+
+Validator -->|Safe| Executor[Python Executor]
+
+Validator -->|Unsafe| Error[Security Exception]
+end
+
+Executor --> API
+
+AI --> API
+
+API --> UI
 ### Process Flow
 1. **Chat**: User sends a prompt -> FastAPI forwards to Qwen AI Service -> Model generates code/response -> History is updated and summarized if needed.
 2. **Execution**: User clicks 'Run' -> FastAPI forwards code to Sandbox -> AST Validator checks for blacklisted calls -> If safe, code executes in a separate process -> Results returned to UI.
